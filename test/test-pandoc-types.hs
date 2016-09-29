@@ -3,8 +3,8 @@ import Text.Pandoc.Arbitrary
 import Test.QuickCheck
 import Data.Aeson
 
-prop_roundtrip :: Meta -> Bool
-prop_roundtrip doc = case decode $ encode doc :: (Maybe Meta) of
+prop_roundtrip :: Pandoc -> Bool
+prop_roundtrip doc = case decode $ encode doc :: (Maybe Pandoc) of
   Just doc' -> doc == doc'
   _         -> False
 
