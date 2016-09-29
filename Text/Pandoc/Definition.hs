@@ -300,35 +300,23 @@ instance FromJSON MetaValue where
       _ -> mempty
   parseJSON _ = mempty
 instance ToJSON MetaValue where
-  toJSON (MetaMap mp) =
-    object [ "t" .= String "MetaMap"
-           , "c" .= mp
-           ]
-  toJSON (MetaList lst) =
-    object [ "t" .= String "MetaList"
-           , "c" .= lst
-           ]
-  toJSON (MetaBool bool) =
-    object [ "t" .= String "MetaBool"
-           , "c" .= bool
-           ]
-  toJSON (MetaString s) =
-    object [ "t" .= String "MetaString"
-           , "c" .= s
-           ]
-  toJSON (MetaInlines ils) =
-    object [ "t" .= String "MetaInlines"
-           , "c" .= ils
-           ]
-  toJSON (MetaBlocks blks) =
-    object [ "t" .= String "MetaBlocks"
-           , "c" .= blks
-           ]
+  toEncoding (MetaMap mp) =
+    pairs $ "t" .= String "MetaMap" <>  "c" .= mp
+  toEncoding (MetaList lst) =
+    pairs $ "t" .= String "MetaList" <> "c" .= lst
+  toEncoding (MetaBool bool) =
+    pairs $ "t" .= String "MetaBool" <> "c" .= bool
+  toEncoding (MetaString s) =
+    pairs $ "t" .= String "MetaString" <> "c" .= s
+  toEncoding (MetaInlines ils) =
+    pairs $ "t" .= String "MetaInlines" <> "c" .= ils
+  toEncoding (MetaBlocks blks) =
+    pairs $ "t" .= String "MetaBlocks" <> "c" .= blks
 
 instance FromJSON Meta where
   parseJSON json = Meta <$> parseJSON json
 instance ToJSON Meta where
-  toJSON meta = toJSON $ unMeta meta
+  toEncoding meta = toEncoding $ unMeta meta
 
 instance FromJSON CitationMode where
   parseJSON (Object v) = do
@@ -340,8 +328,8 @@ instance FromJSON CitationMode where
       _ -> mempty
   parseJSON _ = mempty
 instance ToJSON CitationMode where
-  toJSON cmode =
-    object [ "t" .= String s ]
+  toEncoding cmode =
+    pairs $ "t" .= String s 
     where s = case cmode of
             AuthorInText   -> "AuthorInText"
             SuppressAuthor -> "SuppressAuthor"
@@ -365,14 +353,13 @@ instance FromJSON Citation where
                     }
   parseJSON _ = mempty
 instance ToJSON Citation where
-  toJSON cit =
-    object [ "citationId"      .= citationId cit
-           , "citationPrefix"  .= citationPrefix cit
-           , "citationSuffix"  .= citationSuffix cit
-           , "citationMode"    .= citationMode cit
-           , "citationNoteNum" .= citationNoteNum cit
-           , "citationHash"    .= citationHash cit
-           ]
+  toEncoding cit =
+    pairs $ "citationId"      .= citationId cit
+         <> "citationPrefix"  .= citationPrefix cit
+         <> "citationSuffix"  .= citationSuffix cit
+         <> "citationMode"    .= citationMode cit
+         <> "citationNoteNum" .= citationNoteNum cit
+         <> "citationHash"    .= citationHash cit
 
 instance FromJSON QuoteType where
   parseJSON (Object v) = do
@@ -383,7 +370,7 @@ instance FromJSON QuoteType where
       _                    -> mempty
   parseJSON _ = mempty      
 instance ToJSON QuoteType where
-  toJSON qtype = object [ "t" .= String s ]
+  toEncoding qtype = pairs $ "t" .= String s
     where s = case qtype of
             SingleQuote -> "SingleQuote"
             DoubleQuote -> "DoubleQuote"
@@ -398,7 +385,7 @@ instance FromJSON MathType where
       _                    -> mempty
   parseJSON _ = mempty      
 instance ToJSON MathType where
-  toJSON mtype = object [ "t" .= String s ]
+  toEncoding mtype = pairs $ "t" .= String s
     where s = case mtype of
             DisplayMath -> "DisplayMath"
             InlineMath  -> "InlineMath"
@@ -417,7 +404,7 @@ instance FromJSON ListNumberStyle where
       _              -> mempty
   parseJSON _ = mempty      
 instance ToJSON ListNumberStyle where
-  toJSON lsty = object [ "t" .= String s ]
+  toEncoding lsty = pairs $ "t" .= String s
     where s = case lsty of
             DefaultStyle -> "DefaultStyle"
             Example      -> "Example"
@@ -438,7 +425,7 @@ instance FromJSON ListNumberDelim where
       _                     -> mempty
   parseJSON _ = mempty      
 instance ToJSON ListNumberDelim where
-  toJSON delim = object [ "t" .= String s ]
+  toEncoding delim = pairs $ "t" .= String s
     where s = case delim of
             DefaultDelim -> "DefaultDelim"
             Period       -> "Period"
@@ -456,7 +443,7 @@ instance FromJSON Alignment where
       _                     -> mempty
   parseJSON _ = mempty      
 instance ToJSON Alignment where
-  toJSON delim = object [ "t" .= String s ]
+  toEncoding delim = pairs $ "t" .= String s
     where s = case delim of
             AlignLeft    -> "AlignLeft"
             AlignRight   -> "AlignRight"
@@ -499,94 +486,60 @@ instance FromJSON Inline where
   parseJSON _ = mempty
 
 instance ToJSON Inline where
-  toJSON (Str s) =
-    object [ "t" .= String "Str"
-           , "c" .= s
-           ]
-  toJSON (Emph ils) =
-    object [ "t" .= String "Emph"
-           , "c" .= ils
-           ]
-  toJSON (Strong ils) =
-    object [ "t" .= String "Strong"
-           , "c" .= ils
-           ]
-  toJSON (Strikeout ils) =
-    object [ "t" .= String "Strikeout"
-           , "c" .= ils
-           ]
-  toJSON (Superscript ils) =
-    object [ "t" .= String "Superscript"
-           , "c" .= ils
-           ]
-  toJSON (Subscript ils) =
-    object [ "t" .= String "Subscript"
-           , "c" .= ils
-           ]
-  toJSON (SmallCaps ils) =
-    object [ "t" .= String "SmallCaps"
-           , "c" .= ils
-           ]
-  toJSON (Quoted qtype ils) =
-    object [ "t" .= String "Quoted"
-           , "c" .= Array [ toJSON qtype
-                          , toJSON ils
-                          ]
-           ]
-  toJSON (Cite cits ils) =
-    object [ "t" .= String "Cite"
-           , "c" .= Array [ toJSON cits
-                          , toJSON ils
-                          ]
-           ]
-  toJSON (Code attr s) =
-    object [ "t"  .= String "Code"
-           , "c"  .= Array [ toJSON attr
-                           , toJSON s
-                           ]
-           ]
-  toJSON Space =
-    object [ "t" .= String "Space" ]
-  toJSON SoftBreak =
-    object [ "t" .= String "SoftBreak" ]
-  toJSON LineBreak =
-    object [ "t" .= String "LineBreak" ]
-  toJSON (Math mtype s) =
-    object [ "t" .= String "Math"
-           , "c" .= Array [ toJSON mtype
-                          , toJSON s
-                          ]
-           ]
-  toJSON (RawInline fmt s) =
-    object [ "t" .= String "RawInline"
-           , "c" .= Array [ toJSON fmt
-                          , toJSON s
-                          ]
-           ]
-  toJSON (Link attr ils target) =
-    object [ "t" .= String "Link"
-           , "c" .= Array [ toJSON attr
-                          , toJSON ils
-                          , toJSON target
-                          ]
-           ]
-  toJSON (Image attr ils target) =
-    object [ "t" .= String "Image"
-           , "c" .= Array [ toJSON attr
-                          , toJSON ils
-                          , toJSON target
-                          ]
-           ]
-  toJSON (Note blks) =
-    object [ "t" .= String "Note"
-           , "c" .= blks
-           ]
-  toJSON (Span attr ils) =
-    object [ "t" .= String "Span"
-           , "c" .= Array [ toJSON attr
-                          , toJSON ils
-                          ]
-           ]
+  toEncoding (Str s) =
+    pairs $ "t" .= String "Str"
+         <> "c" .= s
+  toEncoding (Emph ils) =
+    pairs $ "t" .= String "Emph"
+         <> "c" .= ils
+  toEncoding (Strong ils) =
+    pairs $ "t" .= String "Strong"
+         <> "c" .= ils
+  toEncoding (Strikeout ils) =
+    pairs $ "t" .= String "Strikeout"
+         <> "c" .= ils
+  toEncoding (Superscript ils) =
+    pairs $ "t" .= String "Superscript"
+         <>  "c" .= ils
+  toEncoding (Subscript ils) =
+    pairs $ "t" .= String "Subscript"
+         <> "c" .= ils
+  toEncoding (SmallCaps ils) =
+    pairs $ "t" .= String "SmallCaps"
+         <> "c" .= ils
+  toEncoding (Quoted qtype ils) =
+    pairs $ "t" .= String "Quoted"
+         <> "c" .= (qtype, ils)
+  toEncoding (Cite cits ils) =
+    pairs $ "t" .= String "Cite"
+         <> "c" .= (cits, ils)
+  toEncoding (Code attr s) =
+    pairs $ "t" .= String "Code"
+         <> "c"  .= (attr, s)
+  toEncoding Space =
+    pairs $ "t" .= String "Space"
+  toEncoding SoftBreak =
+    pairs $ "t" .= String "SoftBreak"
+  toEncoding LineBreak =
+    pairs $ "t" .= String "LineBreak"
+  toEncoding (Math mtype s) =
+    pairs $ "t" .= String "Math"
+         <> "c" .= (mtype, s)
+  toEncoding (RawInline fmt s) =
+    pairs $ "t" .= String "RawInline"
+         <> "c" .= (fmt, s)
+  toEncoding (Link attr ils target) =
+    pairs $ "t" .= String "Link"
+         <> "c" .= (attr, ils, target)
+  toEncoding (Image attr ils target) =
+    pairs $ "t" .= String "Image"
+         <> "c" .= (attr, ils, target)
+  toEncoding (Note blks) =
+    pairs $ "t" .= String "Note"
+         <> "c" .= blks
+  toEncoding (Span attr ils) =
+    pairs $ "t" .= String "Span"
+         <> "c" .= (attr, ils)
 
 instance FromJSON Block where
   parseJSON (Object v) = do
@@ -614,69 +567,43 @@ instance FromJSON Block where
       _                -> mempty
   parseJSON _ = mempty
 instance ToJSON Block where
-  toJSON (Plain ils) =
-    object [ "t" .= String "Plain"
-           , "c" .= ils
-           ]
-  toJSON (Para ils) =
-    object [ "t" .= String "Para"
-           , "c" .= ils
-           ]
-  toJSON (CodeBlock attr s) =
-    object [ "t" .= String "CodeBlock"
-           , "c" .= Array [ toJSON attr
-                          , toJSON s
-                          ]
-           ]
-  toJSON (RawBlock fmt s) =
-    object [ "t" .= String "RawBlock"
-           , "c" .= Array [ toJSON fmt
-                          , toJSON s
-                          ]
-           ]
-  toJSON (BlockQuote blks) =
-    object [ "t" .= String "BlockQuote"
-           , "c" .= blks
-           ]
-
-  toJSON (OrderedList listAttrs blksList) =
-    object [ "t" .= String "OrderedList"
-           , "c" .= Array [ toJSON listAttrs
-                          , toJSON blksList
-                          ]
-           ]
-  toJSON (BulletList blksList) =
-    object [ "t" .= String "BulletList"
-           , "c" .= blksList
-           ]
-  toJSON (DefinitionList defs) =
-    object [ "t" .= String "DefinitionList"
-           , "c" .= defs
-           ]
-  toJSON (Header n attr ils) =
-    object [ "t" .= String "Header"
-           , "c" .= Array [ toJSON n
-                          , toJSON attr
-                          , toJSON ils
-                          ]
-           ]
-  toJSON HorizontalRule =
-    object [ "t" .= String "HorizontalRule" ]
-  toJSON (Table caption aligns widths cells rows) =
-    object [ "t" .= String "Table"
-           , "c" .= Array [ toJSON caption
-                          , toJSON aligns
-                          , toJSON widths
-                          , toJSON cells
-                          , toJSON rows
-                          ]
-           ]
-  toJSON (Div attr blks) =
-    object [ "t" .= String "Div"
-           , "c" .= blks
-           ]
-  toJSON Null =
-    object [ "t" .= String "Null" ]
+  toEncoding (Plain ils) =
+    pairs $ "t" .= String "Plain"
+         <> "c" .= ils
+  toEncoding (Para ils) =
+    pairs $ "t" .= String "Para"
+         <> "c" .= ils
+  toEncoding (CodeBlock attr s) =
+    pairs $ "t" .= String "CodeBlock"
+         <> "c" .= (attr, s)
+  toEncoding (RawBlock fmt s) =
+    pairs $ "t" .= String "RawBlock"
+         <> "c" .= (fmt, s)
+  toEncoding (BlockQuote blks) =
+    pairs $ "t" .= String "BlockQuote"
+         <> "c" .= blks
+  toEncoding (OrderedList listAttrs blksList) =
+    pairs $ "t" .= String "OrderedList"
+         <> "c" .= (listAttrs, blksList)
+  toEncoding (BulletList blksList) =
+    pairs $ "t" .= String "BulletList"
+         <> "c" .= blksList
+  toEncoding (DefinitionList defs) =
+    pairs $ "t" .= String "DefinitionList"
+         <> "c" .= defs
+  toEncoding (Header n attr ils) =
+    pairs $ "t" .= String "Header"
+         <> "c" .= (n, attr, ils)
+  toEncoding HorizontalRule =
+    pairs $ "t" .= String "HorizontalRule"
+  toEncoding (Table caption aligns widths cells rows) =
+    pairs $ "t" .= String "Table"
+         <> "c" .= (caption, aligns, widths, cells, rows)
+  toEncoding (Div attr blks) =
+    pairs $ "t" .= String "Div"
+         <> "c" .= blks
+  toEncoding Null =
+    pairs $ "t" .= String "Null"
 
 instance FromJSON Pandoc where
   parseJSON (Object v) = do
@@ -698,11 +625,10 @@ instance FromJSON Pandoc where
       _ -> fail "JSON missing pandoc-api-version."
   parseJSON _ = mempty
 instance ToJSON Pandoc where
-  toJSON (Pandoc meta blks) =
-    object [ "pandoc-api-version" .= versionBranch pandocTypesVersion
-           , "meta"               .= meta
-           , "blocks"             .= blks
-           ]
+  toEncoding (Pandoc meta blks) =
+    pairs $ "pandoc-api-version" .= versionBranch pandocTypesVersion
+         <> "meta"               .= meta
+         <> "blocks"             .= blks
 
 -- Instances for deepseq
 #if MIN_VERSION_base(4,8,0)
